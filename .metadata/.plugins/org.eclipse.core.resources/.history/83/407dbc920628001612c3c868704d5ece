@@ -1,0 +1,146 @@
+package POS_SYSTEM;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.text.View;
+
+
+public class Start implements ActionListener {
+	Connection dbTest;
+    private String username;
+    private String password;
+    
+	private JFrame loginFrame = new JFrame();
+	private JPanel loginPanel = new JPanel();
+	private JLabel idLabel = new JLabel("아이디");
+	private JLabel pwdLabel = new JLabel("비밀번호");
+	private JTextField idInput = new JTextField();
+	private JPasswordField pwdInput = new JPasswordField();
+	private JButton loginButton1 = new JButton("로그인");
+	private JButton loginButton2 = new JButton("로그인");
+	
+	
+	public Start(){ //데이터베이스 로그인 GUI 생성자
+		loginPanel.setLayout(null);
+		idLabel.setBounds(20, 10, 60, 30);
+		pwdLabel.setBounds(20, 50, 60, 30);
+		idInput.setBounds(100, 10, 80, 30);
+		pwdInput.setBounds(100, 50, 80, 30);
+		loginButton1.setBounds(200, 25, 80, 35);
+		
+		loginButton1.addActionListener(this);
+
+		loginPanel.add(idLabel);
+		loginPanel.add(pwdLabel);
+		loginPanel.add(idInput);
+		loginPanel.add(pwdInput);
+		loginPanel.add(loginButton1);
+		loginFrame.add(loginPanel);
+		
+		loginFrame.setTitle("데이터베이스 로그인");
+		loginFrame.setSize(320, 130);
+		loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		loginFrame.setVisible(true);
+	}
+	
+	public void login(){ //사원 로그인 GUI 생성자
+		loginFrame = new JFrame();
+        loginPanel = new JPanel();
+        idLabel = new JLabel("이름");
+    	pwdLabel = new JLabel("사원번호");
+    	idInput = new JTextField();
+    	pwdInput = new JPasswordField();
+    	loginButton2 = new JButton("로그인");
+    	
+    	loginPanel.setLayout(null);
+		idLabel.setBounds(20, 10, 60, 30);
+		pwdLabel.setBounds(20, 50, 60, 30);
+		idInput.setBounds(100, 10, 80, 30);
+		pwdInput.setBounds(100, 50, 80, 30);
+		loginButton2.setBounds(200, 25, 80, 35);
+		
+		loginButton2.addActionListener(this);
+
+		loginPanel.add(idLabel);
+		loginPanel.add(pwdLabel);
+		loginPanel.add(idInput);
+		loginPanel.add(pwdInput);
+		loginPanel.add(loginButton2);
+		loginFrame.add(loginPanel);
+		
+		loginFrame.setTitle("사원 로그인");
+		loginFrame.setSize(320, 130);
+		loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		loginFrame.setVisible(true);
+    	
+	}
+	
+	public void actionPerformed(ActionEvent e){
+        if(e.getSource() == loginButton1){ //데이터베이스 로그인 관장
+            username = idInput.getText();
+            password = new String(pwdInput.getPassword());
+
+            connectDB();
+            new Pos(dbTest);
+        }
+        else if(e.getSource() == loginButton2){ //사원 로그인 관장
+        	String name = idInput.getText();
+        	String id = new String(pwdInput.getPassword());
+        	/*try {
+				if (check(name, id)) {
+					JOptionPane.showMessageDialog(null, "로그인되었습니다.");
+					System.out.println(setGrade(name));
+					pos.currentStaff = name;
+					pos.authority = setGrade(name);
+					if (setGrade(name).equals("Supervisor")) {
+						pos.c_date.removeAllItems();
+						pos.getSalesItem();
+					}
+					else if (setGrade(name).equals("Staff")) {
+						pos.c_date.removeAllItems();
+					}
+					pos.background.setTitle("식당 관리 시스템 (현재 관리자 : " + name + ")");
+					loginFrame.dispose();
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "로그인에 실패하였습니다.");
+				}
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}*/
+        }
+	}
+	
+	private void connectDB(){ //데이터베이스 연결
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            dbTest = DriverManager.getConnection("jdbc:oracle:thin:" + "@localhost:1521:XE", username, password);
+            //System.out.println("데이터베이스접속 성공 - id: "+username);
+            loginFrame.setVisible(false);
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+            //System.out.println("패패");
+        }
+        catch(Exception e){
+            //System.out.println("Exception:"+e);
+        }
+    }
+	
+	public static void main(String[] args) {
+		new Start();
+	}
+
+}

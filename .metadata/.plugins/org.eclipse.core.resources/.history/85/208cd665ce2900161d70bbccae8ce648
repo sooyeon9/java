@@ -1,0 +1,121 @@
+package POS_SYSTEM;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+public class Login implements ActionListener {
+	Connection db;
+	String sql;
+	PreparedStatement stmt;
+	ResultSet rs;
+	Pos pos;
+	
+	private JFrame loginFrame = new JFrame();
+	private JPanel loginPanel = new JPanel();
+	private JLabel idLabel = new JLabel("아이디");
+	private JLabel pwdLabel = new JLabel("비밀번호");
+	private JTextField idInput = new JTextField();
+	private JPasswordField pwdInput = new JPasswordField();
+	private JButton loginButton = new JButton("로그인");
+
+	public Login(Connection db,Pos pos){ //사원 로그인 GUI 생성자
+		this.db = db;
+		this.pos = pos;
+
+		loginPanel.setLayout(null);
+		idLabel.setBounds(20, 10, 60, 30);
+		pwdLabel.setBounds(20, 50, 60, 30);
+		idInput.setBounds(100, 10, 80, 30);
+		pwdInput.setBounds(100, 50, 80, 30);
+		loginButton.setBounds(200, 25, 80, 35);
+		
+		loginButton.addActionListener(this);
+
+		loginPanel.add(idLabel);
+		loginPanel.add(pwdLabel);
+		loginPanel.add(idInput);
+		loginPanel.add(pwdInput);
+		loginPanel.add(loginButton);
+		loginFrame.add(loginPanel);
+		
+		loginFrame.setTitle("사원 로그인");
+		loginFrame.setSize(320, 130);
+		loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		loginFrame.setVisible(true);
+    	
+	}
+	
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource() == loginButton){ //사원 로그인 관장
+        	String name = idInput.getText();
+        	String id = new String(pwdInput.getPassword());
+        	try {
+        		String rank = login_check(name,id);
+				if (rank==null) {
+					JOptionPane.showMessageDialog(null, "로그인에 실패하였습니다.");
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "로그인되었습니다.");
+					pos.connector = name;
+					pos.connector_rank = rank;
+					if (rank.equals("Supervisor")) {
+						pos.c_date.removeAllItems();
+						//pos.getSalesItem();
+					}
+					else if (rank.equals("Staff")) {
+						pos.c_date.removeAllItems();
+					}
+					pos.addDatesCombobox();
+					pos.background.setTitle("식당 관리 시스템 ("+name+"님  - "+rank+")");
+					loginFrame.dispose();
+				}
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        }
+	}
+	
+	//↓ 로그인 성공하면 해당 접속자의 직급(rank)리턴, 로그인 실패시 null리턴
+		public String login_check(String name, String id) throws SQLException{
+			boolean n_success=false, i_success=false;
+			String rank = null;
+			sql = "SELECT name FROM worker";
+			stmt = db.prepareStatement(sql);
+			rs = stmt.executeQuery();
+			while(rs.next()){
+				if(name.equals(rs.getString("name")))
+					n_success = true;
+			}
+			if(n_success){
+				sql = "SELECT w_id FROM worker WHERE name = '"+ name +"'";
+				stmt = db.prepareStatement(sql);
+				rs = stmt.executeQuery();
+				rs.next();
+				if(id.equals(rs.getString("w_id")))
+					i_success = true;
+			}
+			if(n_success&&i_success){
+				sql = "SELECT rank FROM worker WHERE name = '"+ name +"'";
+				stmt = db.prepareStatement(sql);
+				rs = stmt.executeQuery();
+				rs.next();
+				rank = rs.getString("rank");
+			}
+			return rank;
+		}
+
+}

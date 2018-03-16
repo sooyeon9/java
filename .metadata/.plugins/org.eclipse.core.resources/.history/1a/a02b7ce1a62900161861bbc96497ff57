@@ -1,0 +1,112 @@
+package POS_SYSTEM;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class Join implements ActionListener {
+	Connection db;
+	String sql;
+	PreparedStatement stmt;
+	ResultSet rs;
+	
+	int c_id = 1000;
+	
+	JFrame joinFrame = new JFrame();
+	JPanel joinPanel = new JPanel();
+	JLabel l_name = new JLabel("고객명");
+	JLabel l_birth = new JLabel("생일(4자리)");
+	JLabel l_tel = new JLabel("연락처");
+	JTextField f_name = new JTextField();
+	JTextField f_birth = new JTextField();
+	JTextField f_tel = new JTextField();
+	JButton b_join = new JButton("가입신청");
+	JButton b_cancle = new JButton("취소");
+	
+	public Join(Connection db){
+		this.db = db;
+		this.db = db;
+		joinPanel.setLayout(null);
+		l_name.setBounds(20, 20, 100, 30);
+		l_birth.setBounds(20, 70, 100, 30);
+		l_tel.setBounds(20, 120, 100, 30);
+		f_name.setBounds(130, 20, 100, 30);
+		f_birth.setBounds(130, 70, 100, 30);
+		f_tel.setBounds(130, 120, 100, 30);
+		b_join.setBounds(20, 170, 100, 30);
+		b_cancle.setBounds(130, 170, 100, 30);
+		b_join.addActionListener(this);
+		b_cancle.addActionListener(this);
+		joinPanel.add(l_name);
+		joinPanel.add(l_birth);
+		joinPanel.add(l_tel);
+		joinPanel.add(f_name);
+		joinPanel.add(f_birth);
+		joinPanel.add(f_tel);
+		joinPanel.add(b_join);
+		joinPanel.add(b_cancle);
+		joinFrame.add(joinPanel);
+		joinFrame.setTitle("회원등록");
+		joinFrame.setBounds(150, 150, 270, 250);
+		joinFrame.setVisible(true);
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == b_join){ //'가입신청' 버튼
+			String name = f_name.getText();
+			String birth = f_birth.getText();
+			String tel = f_tel.getText();
+			//이미 존재하는 고객인지 확인
+			sql = "SELECT name FROM customer";
+			try {
+				stmt = db.prepareStatement(sql);
+				rs = stmt.executeQuery();
+				while(rs.next())
+					if(name.equals(rs.getString("name")))
+						JOptionPane.showMessageDialog(null, "이미 가입된 고객입니다.");		
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			if(birth.length()!=4)
+				JOptionPane.showMessageDialog(null, "생일은 4자리로 입력해야합니다.");
+			else
+				try {
+					addCustomer(name,birth,tel);
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		} else if(e.getSource() == b_cancle) {//'취소' 버튼
+			joinFrame.dispose();
+		}
+	}
+	
+	//↓ 고객에 추가해주는 메소드
+	public void addCustomer(String n, String b, String t) throws SQLException {
+		sql = "SELECT c_id FROM customer";
+		stmt = db.prepareStatement(sql);
+		rs = stmt.executeQuery();
+		while(rs.next())
+			c_id = rs.getInt("c_id");
+		c_id++;
+		sql = "insert into customer values('"+n+"',"+c_id+",'"+b+"'"+t+",Normal)";
+		stmt = db.prepareStatement(sql);
+		stmt.executeUpdate();
+		stmt.close(); rs.close();
+		JOptionPane.showMessageDialog(null, n+"님 가입 완료!");
+		joinFrame.dispose();
+		
+	}
+
+}
